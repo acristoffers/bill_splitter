@@ -22,6 +22,7 @@
 
 import 'package:bill_splitter/carte.dart';
 import 'package:bill_splitter/people.dart';
+import 'package:bill_splitter/store.dart';
 import 'package:flutter/material.dart';
 
 class Menu extends StatefulWidget {
@@ -30,8 +31,8 @@ class Menu extends StatefulWidget {
 }
 
 class _MenuState extends State<Menu> with TickerProviderStateMixin {
-  _Pages _currentAnimation;
-  _Pages _currentPage = _Pages.Menu;
+  Pages _currentAnimation;
+  Pages _currentPage = Pages.Menu;
   AnimationController _animationController;
   Animation<double> _a1;
   Animation<double> _a2;
@@ -69,7 +70,7 @@ class _MenuState extends State<Menu> with TickerProviderStateMixin {
           builder: (context, widget) {
             return Stack(
               children: <Widget>[
-                _currentPage == _Pages.People ? People() : Carte(),
+                _currentPage == Pages.People ? People() : Carte(),
                 _carte(constraints),
                 _people(constraints),
               ],
@@ -90,7 +91,7 @@ class _MenuState extends State<Menu> with TickerProviderStateMixin {
     double height = _a1.value == 0 ? null : _interpol(_a1.value, maxHeight, 58);
     CustomClipper<Path> clipper = _PersonOutClipper(_a1.value);
 
-    if (_currentAnimation == _Pages.Carte) {
+    if (_currentAnimation == Pages.Carte) {
       left = 0;
       right = 0;
       bottom = 0;
@@ -108,14 +109,15 @@ class _MenuState extends State<Menu> with TickerProviderStateMixin {
         clipper: clipper,
         child: GestureDetector(
           onTap: () {
-            if (_currentPage == _Pages.Menu) {
-              _currentPage = _Pages.People;
-              _currentAnimation = _Pages.People;
+            if (_currentPage == Pages.Menu) {
+              _currentPage = Pages.People;
+              _currentAnimation = Pages.People;
               _animationController.forward();
             } else {
-              _currentPage = _Pages.Menu;
+              _currentPage = Pages.Menu;
               _animationController.reverse();
             }
+            setPage(_currentPage);
           },
           child: Container(
             color: Colors.deepPurple,
@@ -143,7 +145,7 @@ class _MenuState extends State<Menu> with TickerProviderStateMixin {
     double bottom = _a1.value == 0 ? 0 : null;
     double height = _a1.value == 0 ? null : _interpol(_a1.value, maxHeight, 58);
 
-    if (_currentAnimation == _Pages.People) {
+    if (_currentAnimation == Pages.People) {
       left = _interpol(_a1.value, 0, -maxWidth);
       right = _interpol(_a1.value, 0, maxWidth);
       bottom = 0;
@@ -158,14 +160,15 @@ class _MenuState extends State<Menu> with TickerProviderStateMixin {
       height: height,
       child: GestureDetector(
         onTap: () {
-          if (_currentPage == _Pages.Menu) {
-            _currentPage = _Pages.Carte;
-            _currentAnimation = _Pages.Carte;
+          if (_currentPage == Pages.Menu) {
+            _currentPage = Pages.Carte;
+            _currentAnimation = Pages.Carte;
             _animationController.forward();
           } else {
-            _currentPage = _Pages.Menu;
+            _currentPage = Pages.Menu;
             _animationController.reverse();
           }
+          setPage(_currentPage);
         },
         child: Container(
           color: Colors.deepOrange,
@@ -188,7 +191,7 @@ class _MenuState extends State<Menu> with TickerProviderStateMixin {
   }
 }
 
-enum _Pages { People, Carte, Menu }
+enum Pages { People, Carte, Menu }
 
 class _CarteOutClipper extends CustomClipper<Path> {
   _CarteOutClipper(this._i);

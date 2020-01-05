@@ -44,6 +44,7 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: Colors.white,
       constraints: BoxConstraints.expand(),
       padding: EdgeInsets.only(top: 66, left: 8, right: 8),
       child: Column(
@@ -66,21 +67,38 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
   Container _header() {
     return Container(
       margin: EdgeInsets.only(bottom: 16),
-      child: TextField(
-        controller: _nameController,
-        focusNode: _nameFocus,
-        onSubmitted: (name) {
-          if (name.isNotEmpty) {
-            addPerson(Person(name));
-            _nameController.clear();
-          }
-          _nameFocus.requestFocus();
-        },
-        decoration: InputDecoration(
-          suffixIcon: Icon(Icons.add),
-          border: UnderlineInputBorder(),
-          labelText: 'Nome',
-        ),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: TextField(
+              controller: _nameController,
+              focusNode: _nameFocus,
+              onSubmitted: (name) {
+                if (name.isNotEmpty) {
+                  addPerson(Person(name.trim()));
+                  _nameController.clear();
+                }
+                _nameFocus.requestFocus();
+              },
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.person),
+                border: UnderlineInputBorder(),
+                labelText: 'Nome',
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              final name = _nameController.text.trim();
+              if (name.isNotEmpty) {
+                addPerson(Person(name));
+                _nameController.clear();
+              }
+              _nameFocus.requestFocus();
+            },
+          )
+        ],
       ),
     );
   }
@@ -142,7 +160,9 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
                           setPerson(person);
                         },
                       ),
-                      Expanded(child: Text('${item.name} x$count')),
+                      Expanded(
+                        child: Text('${item.name} (x${item.qty}) x$count'),
+                      ),
                       Container(child: Text(value.toStringAsFixed(2)))
                     ],
                   );

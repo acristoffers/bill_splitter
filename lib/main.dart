@@ -23,11 +23,28 @@
 import 'package:bill_splitter/carte.dart';
 import 'package:bill_splitter/menu.dart';
 import 'package:bill_splitter/people.dart';
+import 'package:bill_splitter/store.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flux/flutter_flux.dart';
 
 void main() => runApp(Application());
 
-class Application extends StatelessWidget {
+class Application extends StatefulWidget {
+  @override
+  _ApplicationState createState() => _ApplicationState();
+}
+
+class _ApplicationState extends State<Application>
+    with StoreWatcherMixin<Application> {
+  SplitterStore _store;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _store = listenToStore(storeToken);
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -35,58 +52,14 @@ class Application extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: Container(
-          color: Colors.white,
+          color: _store.page == Pages.Carte
+              ? Colors.deepOrange
+              : Colors.deepPurple,
           child: SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
                 if (constraints.maxWidth > 900) {
-                  return Flex(
-                    direction: Axis.horizontal,
-                    children: <Widget>[
-                      Flexible(
-                        child: Stack(
-                          children: [
-                            People(),
-                            Positioned(
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              child: Container(
-                                color: Colors.deepPurple,
-                                padding: EdgeInsets.all(8),
-                                child: Text(
-                                  'Pessoas',
-                                  style: TextStyle(
-                                      fontSize: 36, color: Colors.greenAccent),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                      Flexible(
-                        child: Stack(
-                          children: [
-                            Carte(),
-                            Positioned(
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              child: Container(
-                                color: Colors.deepOrange,
-                                padding: EdgeInsets.all(8),
-                                child: Text(
-                                  'Cardápio',
-                                  style: TextStyle(
-                                      fontSize: 36, color: Colors.yellowAccent),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
+                  return _tabletLayout();
                 } else {
                   return Menu();
                 }
@@ -95,6 +68,54 @@ class Application extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Flex _tabletLayout() {
+    return Flex(
+      direction: Axis.horizontal,
+      children: <Widget>[
+        Flexible(
+          child: Stack(
+            children: [
+              People(),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  color: Colors.deepPurple,
+                  padding: EdgeInsets.all(8),
+                  child: Text(
+                    'Pessoas',
+                    style: TextStyle(fontSize: 36, color: Colors.greenAccent),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+        Flexible(
+          child: Stack(
+            children: [
+              Carte(),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  color: Colors.deepOrange,
+                  padding: EdgeInsets.all(8),
+                  child: Text(
+                    'Cardápio',
+                    style: TextStyle(fontSize: 36, color: Colors.yellowAccent),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

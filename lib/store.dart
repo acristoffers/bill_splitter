@@ -22,6 +22,7 @@
 
 import 'dart:convert';
 
+import 'package:bill_splitter/menu.dart';
 import 'package:flutter_flux/flutter_flux.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -49,6 +50,8 @@ final addItem = Action<Item>();
 final setItem = Action<Item>();
 final delItem = Action<Item>();
 
+final setPage = Action<Pages>();
+
 class SplitterStore extends Store {
   bool _loaded = false;
 
@@ -58,8 +61,13 @@ class SplitterStore extends Store {
   List<Person> get people => _people;
   List<Item> get items => _items;
 
+  Pages _page = Pages.Menu;
+  Pages get page => _page;
+
   SplitterStore() {
     _load();
+
+    triggerOnAction(setPage, (page) => _page = page);
 
     triggerOnAction(addPerson, (person) {
       _people.add(person);

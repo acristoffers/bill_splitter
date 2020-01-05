@@ -34,7 +34,7 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
   SplitterStore _store;
   TextEditingController _nameController = TextEditingController();
   TextEditingController _priceController = TextEditingController();
-  TextEditingController _qtyController = TextEditingController();
+  TextEditingController _qtyController = TextEditingController(text: '1');
   FocusNode _nameFocus = FocusNode();
 
   @override
@@ -47,6 +47,7 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: Colors.white,
       constraints: BoxConstraints.expand(),
       padding: EdgeInsets.only(top: 66, left: 8, right: 8),
       child: Column(
@@ -69,59 +70,70 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
   Container _header() {
     return Container(
       margin: EdgeInsets.only(bottom: 16),
-      child: Row(
+      child: Column(
         children: <Widget>[
-          Expanded(
-            child: TextField(
-              controller: _qtyController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                border: UnderlineInputBorder(),
-                labelText: 'Unidades',
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: TextField(
+                  controller: _qtyController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.queue),
+                    border: UnderlineInputBorder(),
+                    labelText: 'Unidades',
+                  ),
+                ),
               ),
-            ),
-          ),
-          Padding(padding: EdgeInsets.only(left: 8)),
-          Expanded(
-            child: TextField(
-              controller: _nameController,
-              focusNode: _nameFocus,
-              decoration: InputDecoration(
-                border: UnderlineInputBorder(),
-                labelText: 'Nome',
+              Padding(padding: EdgeInsets.only(left: 8)),
+              Expanded(
+                child: TextField(
+                  controller: _priceController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.monetization_on),
+                    border: UnderlineInputBorder(),
+                    labelText: 'Preço',
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-          Padding(padding: EdgeInsets.only(left: 8)),
-          Expanded(
-            child: TextField(
-              controller: _priceController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                border: UnderlineInputBorder(),
-                labelText: 'Preço',
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: TextField(
+                  controller: _nameController,
+                  focusNode: _nameFocus,
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.tag_faces),
+                    border: UnderlineInputBorder(),
+                    labelText: 'Nome',
+                  ),
+                ),
               ),
-            ),
-          ),
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              try {
-                final name = _nameController.text;
-                final price = double.parse(_priceController.text);
-                final qty = int.parse(_qtyController.text);
+              IconButton(
+                icon: Icon(Icons.add),
+                onPressed: () {
+                  try {
+                    final name = _nameController.text.trim();
+                    final price = double.parse(_priceController.text.trim());
+                    final str = _qtyController.text.trim().replaceAll(',', '.');
+                    final qty = int.parse(str);
 
-                if (name.isNotEmpty) {
-                  addItem(Item(qty, name, price));
-                  _nameController.clear();
-                  _priceController.clear();
-                  _qtyController.text = '1';
-                }
+                    if (name.isNotEmpty) {
+                      addItem(Item(qty, name, price));
+                      _nameController.clear();
+                      _priceController.clear();
+                      _qtyController.text = '1';
+                    }
 
-                _nameFocus.requestFocus();
-              } catch (_) {}
-            },
-          )
+                    _nameFocus.requestFocus();
+                  } catch (_) {}
+                },
+              ),
+            ],
+          ),
         ],
       ),
     );
