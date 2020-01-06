@@ -20,6 +20,8 @@
  * THE SOFTWARE.
  */
 
+import 'dart:async';
+
 import 'package:bill_splitter/store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -36,12 +38,32 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
   TextEditingController _priceController = TextEditingController();
   TextEditingController _qtyController = TextEditingController(text: '1');
   FocusNode _nameFocus = FocusNode();
+  GlobalKey<AnimatedListState> listView = GlobalKey();
+  bool _storeLoaded = false;
 
   @override
   void initState() {
     super.initState();
 
     _store = listenToStore(storeToken);
+    _store.triggerOnAction(addItem, (item) {
+      if (listView.currentState == null) return;
+      final index = _store.items.indexOf(item);
+      listView.currentState.insertItem(index);
+    });
+
+    // The store is only available after the widget was created, so the items
+    // are not available during construction. We then hook up a listener
+    // and add the existing items the first time they come through.
+    _store.listen((store) {
+      if (!_storeLoaded) {
+        for (final item in _store.items) {
+          final index = _store.items.indexOf(item);
+          listView.currentState.insertItem(index);
+        }
+        _storeLoaded = true;
+      }
+    });
   }
 
   @override
@@ -54,14 +76,15 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
         children: <Widget>[
           _header(),
           Expanded(
-            child: ListView.builder(
-              itemCount: _store.items.length,
-              itemBuilder: (context, index) {
+            child: AnimatedList(
+              key: listView,
+              initialItemCount: 0, //_store.items.length,
+              itemBuilder: (context, index, animation) {
                 final item = _store.items[index];
-                return _card(item);
+                return _card(index, item, animation);
               },
             ),
-          ),
+          )
         ],
       ),
     );
@@ -139,81 +162,91 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
     );
   }
 
-  Card _card(Item item) {
-    return Card(
-      child: Container(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: Text(
-                    '${item.name} (R\$${item.value.toStringAsFixed(2)} x${item.qty} R\$${(item.value * item.qty).toStringAsFixed(2)})',
-                  ),
-                ),
-                PopupMenuButton<Person>(
-                  icon: Icon(Icons.add_shopping_cart),
-                  onSelected: (person) {
-                    person.consumed.add(item);
-                    setPerson(person);
-                  },
-                  itemBuilder: (_) {
-                    return _store.people
-                        .map((p) => PopupMenuItem(
-                              child: Text(p.name),
-                              value: p,
-                            ))
-                        .toList();
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.remove),
-                  onPressed: () {
-                    delItem(item);
-                  },
-                )
-              ],
-            ),
-            Container(
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _store.people
-                    .where((p) => p.consumed.contains(item))
-                    .length,
-                itemBuilder: (context, index) {
-                  final people = _store.people
-                      .where((p) => p.consumed.contains(item))
-                      .toList();
-
-                  final person = people[index];
-                  final count = person.consumed.where((i) => i == item).length;
-                  final total = people
-                      .map((p) => p.consumed.where((i) => i == item).length)
-                      .fold(0, (a, e) => a + e);
-                  final value = (count / total * item.value * item.qty);
-
-                  return Container(
-                    padding: EdgeInsets.all(8),
-                    child: Row(
-                      children: <Widget>[
-                        IconButton(
-                          icon: Icon(Icons.remove),
-                          onPressed: () {
-                            person.consumed.remove(item);
-                            setPerson(person);
-                          },
-                        ),
-                        Expanded(child: Text('${person.name} x$count')),
-                        Container(child: Text(value.toStringAsFixed(2)))
-                      ],
+  Widget _card(int index, Item item, Animation<double> animation) {
+    return SizeTransition(
+      sizeFactor: animation,
+      child: Card(
+        child: Container(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      '${item.name} (R\$${item.value.toStringAsFixed(2)} x${item.qty} R\$${(item.value * item.qty).toStringAsFixed(2)})',
                     ),
-                  );
-                },
+                  ),
+                  PopupMenuButton<Person>(
+                    icon: Icon(Icons.add_shopping_cart),
+                    onSelected: (person) {
+                      person.consumed.add(item);
+                      setPerson(person);
+                    },
+                    itemBuilder: (_) {
+                      return _store.people
+                          .map((p) => PopupMenuItem(
+                                child: Text(p.name),
+                                value: p,
+                              ))
+                          .toList();
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.remove),
+                    onPressed: () {
+                      delItem(item);
+                      listView.currentState.removeItem(
+                        index,
+                        (context, animation) {
+                          return _card(index, item, animation);
+                        },
+                      );
+                    },
+                  )
+                ],
               ),
-            )
-          ],
+              Container(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _store.people
+                      .where((p) => p.consumed.contains(item))
+                      .length,
+                  itemBuilder: (context, index) {
+                    final people = _store.people
+                        .where((p) => p.consumed.contains(item))
+                        .toList();
+
+                    final person = people[index];
+                    final count =
+                        person.consumed.where((i) => i == item).length;
+                    final total = people
+                        .map((p) => p.consumed.where((i) => i == item).length)
+                        .fold(0, (a, e) => a + e);
+                    final value = (count / total * item.value * item.qty);
+
+                    return Container(
+                      padding: EdgeInsets.all(8),
+                      child: Row(
+                        children: <Widget>[
+                          IconButton(
+                            icon: Icon(Icons.remove),
+                            onPressed: () {
+                              person.consumed.remove(item);
+                              setPerson(person);
+                            },
+                          ),
+                          Expanded(child: Text('${person.name} x$count')),
+                          Container(child: Text(value.toStringAsFixed(2)))
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

@@ -33,12 +33,18 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
   SplitterStore _store;
   TextEditingController _nameController = TextEditingController();
   FocusNode _nameFocus = FocusNode();
+  GlobalKey<AnimatedListState> listView = GlobalKey();
 
   @override
   void initState() {
     super.initState();
 
     _store = listenToStore(storeToken);
+    _store.triggerOnAction(addPerson, (person) {
+      if (listView.currentState == null) return;
+      final index = _store.people.indexOf(person);
+      listView.currentState.insertItem(index);
+    });
   }
 
   @override
@@ -51,11 +57,12 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
         children: <Widget>[
           _header(),
           Expanded(
-            child: ListView.builder(
-              itemCount: _store.people.length,
-              itemBuilder: (context, index) {
+            child: AnimatedList(
+              key: listView,
+              initialItemCount: _store.people.length,
+              itemBuilder: (context, index, animation) {
                 final person = _store.people[index];
-                return _card(person);
+                return _card(index, person, animation);
               },
             ),
           ),
@@ -103,79 +110,89 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
     );
   }
 
-  Card _card(Person person) {
-    return Card(
-      child: Container(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Expanded(child: Text(person.name)),
-                PopupMenuButton<Item>(
-                  icon: Icon(Icons.add_shopping_cart),
-                  onSelected: (item) {
-                    person.consumed.add(item);
-                    setPerson(person);
-                  },
-                  itemBuilder: (_) {
-                    return _store.items
-                        .map((i) => PopupMenuItem(
-                              child: Text('${i.name} x${i.qty}'),
-                              value: i,
-                            ))
-                        .toList();
+  Widget _card(int index, Person person, Animation<double> animation) {
+    return SizeTransition(
+      sizeFactor: animation,
+      child: Card(
+        child: Container(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Expanded(child: Text(person.name)),
+                  PopupMenuButton<Item>(
+                    icon: Icon(Icons.add_shopping_cart),
+                    onSelected: (item) {
+                      person.consumed.add(item);
+                      setPerson(person);
+                    },
+                    itemBuilder: (_) {
+                      return _store.items
+                          .map((i) => PopupMenuItem(
+                                child: Text('${i.name} x${i.qty}'),
+                                value: i,
+                              ))
+                          .toList();
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.remove),
+                    onPressed: () {
+                      delPerson(person);
+                      listView.currentState.removeItem(
+                        index,
+                        (context, animation) {
+                          return _card(index, person, animation);
+                        },
+                      );
+                    },
+                  )
+                ],
+              ),
+              Container(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: person.consumed.toSet().length,
+                  itemBuilder: (context, index) {
+                    final items = person.consumed.toSet().toList();
+                    items.sort((p1, p2) => p1.name.compareTo(p2.name));
+
+                    final item = items[index];
+                    final count =
+                        person.consumed.where((i) => i == item).length;
+                    final total = _store.people
+                        .map((p) => p.consumed.where((i) => i == item).length)
+                        .fold(0, (a, e) => a + e);
+                    final value = (count / total * item.value * item.qty);
+
+                    return Row(
+                      children: <Widget>[
+                        IconButton(
+                          icon: Icon(Icons.remove),
+                          onPressed: () {
+                            person.consumed.remove(item);
+                            setPerson(person);
+                          },
+                        ),
+                        Expanded(
+                          child: Text('${item.name} (x${item.qty}) x$count'),
+                        ),
+                        Container(child: Text(value.toStringAsFixed(2)))
+                      ],
+                    );
                   },
                 ),
-                IconButton(
-                  icon: Icon(Icons.remove),
-                  onPressed: () {
-                    delPerson(person);
-                  },
-                )
-              ],
-            ),
-            Container(
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: person.consumed.toSet().length,
-                itemBuilder: (context, index) {
-                  final items = person.consumed.toSet().toList();
-                  items.sort((p1, p2) => p1.name.compareTo(p2.name));
-
-                  final item = items[index];
-                  final count = person.consumed.where((i) => i == item).length;
-                  final total = _store.people
-                      .map((p) => p.consumed.where((i) => i == item).length)
-                      .fold(0, (a, e) => a + e);
-                  final value = (count / total * item.value * item.qty);
-
-                  return Row(
-                    children: <Widget>[
-                      IconButton(
-                        icon: Icon(Icons.remove),
-                        onPressed: () {
-                          person.consumed.remove(item);
-                          setPerson(person);
-                        },
-                      ),
-                      Expanded(
-                        child: Text('${item.name} (x${item.qty}) x$count'),
-                      ),
-                      Container(child: Text(value.toStringAsFixed(2)))
-                    ],
-                  );
-                },
               ),
-            ),
-            Row(
-              children: <Widget>[
-                Expanded(child: Container()),
-                Text('R\$${personTotal(person).toStringAsFixed(2)}'),
-              ],
-            )
-          ],
+              Row(
+                children: <Widget>[
+                  Expanded(child: Container()),
+                  Text('Total: ${personTotal(person).toStringAsFixed(2)}'),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
