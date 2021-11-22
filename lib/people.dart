@@ -33,7 +33,7 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
   SplitterStore _store;
   TextEditingController _nameController = TextEditingController();
   FocusNode _nameFocus = FocusNode();
-  GlobalKey<AnimatedListState> listView = GlobalKey();
+  GlobalKey<AnimatedListState> _listView = GlobalKey();
 
   @override
   void initState() {
@@ -41,9 +41,9 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
 
     _store = listenToStore(storeToken);
     _store.triggerOnAction(addPerson, (person) {
-      if (listView.currentState == null) return;
+      if (_listView.currentState == null) return;
       final index = _store.people.indexOf(person);
-      listView.currentState.insertItem(index);
+      _listView.currentState.insertItem(index);
     });
   }
 
@@ -58,7 +58,7 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
           _header(),
           Expanded(
             child: AnimatedList(
-              key: listView,
+              key: _listView,
               initialItemCount: _store.people.length,
               itemBuilder: (context, index, animation) {
                 final person = _store.people[index];
@@ -78,6 +78,7 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
         children: <Widget>[
           Expanded(
             child: TextField(
+              key: Key('person_name'),
               controller: _nameController,
               focusNode: _nameFocus,
               onSubmitted: (name) {
@@ -140,7 +141,7 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
                     icon: Icon(Icons.remove),
                     onPressed: () {
                       delPerson(person);
-                      listView.currentState.removeItem(
+                      _listView.currentState.removeItem(
                         index,
                         (context, animation) {
                           return _card(index, person, animation);

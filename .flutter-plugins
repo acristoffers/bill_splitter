@@ -1,4 +1,4 @@
 # This is a generated file; do not edit or check into version control.
-shared_preferences=/Users/Alan/bin/flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences-0.5.6/
-shared_preferences_macos=/Users/Alan/bin/flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences_macos-0.0.1+3/
-shared_preferences_web=/Users/Alan/bin/flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences_web-0.1.2+2/
+shared_preferences=/opt/homebrew/Caskroom/flutter/2.5.3/flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences-0.5.6/
+shared_preferences_macos=/opt/homebrew/Caskroom/flutter/2.5.3/flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences_macos-0.0.1+3/
+shared_preferences_web=/opt/homebrew/Caskroom/flutter/2.5.3/flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences_web-0.1.2+2/

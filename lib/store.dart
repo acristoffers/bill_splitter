@@ -23,6 +23,7 @@
 import 'dart:convert';
 
 import 'package:bill_splitter/menu.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_flux/flutter_flux.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -57,11 +58,10 @@ class SplitterStore extends Store {
 
   List<Person> _people = List<Person>();
   List<Item> _items = List<Item>();
+  Pages _page = Pages.Menu;
 
   List<Person> get people => _people;
   List<Item> get items => _items;
-
-  Pages _page = Pages.Menu;
   Pages get page => _page;
 
   SplitterStore() {
@@ -135,7 +135,7 @@ class SplitterStore extends Store {
     SharedPreferences.getInstance().then((prefs) {
       prefs.setString('items', jsonEncode(items));
       prefs.setString('people', jsonEncode(people));
-    });
+    }).catchError((e) {});
   }
 
   void _load() {
@@ -162,9 +162,10 @@ class SplitterStore extends Store {
           }
           return person;
         }).toList();
-      });
+      }).catchError((e) {});
     }
   }
 }
 
-final StoreToken storeToken = StoreToken(SplitterStore());
+final globalStore = SplitterStore(); // Because testing
+final StoreToken storeToken = StoreToken(globalStore);

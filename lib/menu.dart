@@ -62,6 +62,12 @@ class _MenuState extends State<Menu> with TickerProviderStateMixin {
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -120,6 +126,7 @@ class _MenuState extends State<Menu> with TickerProviderStateMixin {
             setPage(_currentPage);
           },
           child: Container(
+            key: Key('PeopleMenuOption'),
             color: Colors.deepPurple,
             padding: EdgeInsets.only(
               top: _interpol(_a2.value, 0.25 * maxHeight, 8),
@@ -171,6 +178,7 @@ class _MenuState extends State<Menu> with TickerProviderStateMixin {
           setPage(_currentPage);
         },
         child: Container(
+          key: Key('CarteMenuOption'),
           color: Colors.deepOrange,
           padding: EdgeInsets.only(
             top: _interpol(_a1.value, 0.75 * maxHeight, 8),

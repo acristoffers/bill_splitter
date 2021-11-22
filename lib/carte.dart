@@ -38,7 +38,7 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
   TextEditingController _priceController = TextEditingController();
   TextEditingController _qtyController = TextEditingController(text: '1');
   FocusNode _nameFocus = FocusNode();
-  GlobalKey<AnimatedListState> listView = GlobalKey();
+  GlobalKey<AnimatedListState> _listView = GlobalKey();
   bool _storeLoaded = false;
 
   @override
@@ -47,9 +47,9 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
 
     _store = listenToStore(storeToken);
     _store.triggerOnAction(addItem, (item) {
-      if (listView.currentState == null) return;
+      if (_listView.currentState == null) return;
       final index = _store.items.indexOf(item);
-      listView.currentState.insertItem(index);
+      _listView.currentState.insertItem(index);
     });
 
     // The store is only available after the widget was created, so the items
@@ -59,7 +59,7 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
       if (!_storeLoaded) {
         for (final item in _store.items) {
           final index = _store.items.indexOf(item);
-          listView.currentState.insertItem(index);
+          _listView.currentState.insertItem(index);
         }
         _storeLoaded = true;
       }
@@ -77,7 +77,7 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
           _header(),
           Expanded(
             child: AnimatedList(
-              key: listView,
+              key: _listView,
               initialItemCount: 0, //_store.items.length,
               itemBuilder: (context, index, animation) {
                 final item = _store.items[index];
@@ -140,9 +140,10 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
                 onPressed: () {
                   try {
                     final name = _nameController.text.trim();
-                    final price = double.parse(_priceController.text.trim());
-                    final str = _qtyController.text.trim().replaceAll(',', '.');
-                    final qty = int.parse(str);
+                    final qty = int.parse(_qtyController.text.trim());
+                    final price = double.parse(
+                      _priceController.text.trim().replaceAll(',', '.'),
+                    );
 
                     if (name.isNotEmpty) {
                       addItem(Item(qty, name, price));
@@ -196,7 +197,7 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
                     icon: Icon(Icons.remove),
                     onPressed: () {
                       delItem(item);
-                      listView.currentState.removeItem(
+                      _listView.currentState.removeItem(
                         index,
                         (context, animation) {
                           return _card(index, item, animation);
