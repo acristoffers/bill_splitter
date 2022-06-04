@@ -33,7 +33,7 @@ class Carte extends StatefulWidget {
 }
 
 class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
-  SplitterStore _store;
+  late SplitterStore _store;
   TextEditingController _nameController = TextEditingController();
   TextEditingController _priceController = TextEditingController();
   TextEditingController _qtyController = TextEditingController(text: '1');
@@ -45,11 +45,11 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
   void initState() {
     super.initState();
 
-    _store = listenToStore(storeToken);
-    _store.triggerOnAction(addItem, (item) {
+    _store = listenToStore(storeToken) as SplitterStore;
+    _store.triggerOnAction(addItem, (dynamic item) {
       if (_listView.currentState == null) return;
       final index = _store.items.indexOf(item);
-      _listView.currentState.insertItem(index);
+      _listView.currentState!.insertItem(index);
     });
 
     // The store is only available after the widget was created, so the items
@@ -59,7 +59,7 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
       if (!_storeLoaded) {
         for (final item in _store.items) {
           final index = _store.items.indexOf(item);
-          _listView.currentState.insertItem(index);
+          _listView.currentState!.insertItem(index);
         }
         _storeLoaded = true;
       }
@@ -175,7 +175,7 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
                 children: <Widget>[
                   Expanded(
                     child: Text(
-                      '${item.name} (R\$${item.value.toStringAsFixed(2)} x${item.qty} R\$${(item.value * item.qty).toStringAsFixed(2)})',
+                      '${item.name} (R\$${item.value!.toStringAsFixed(2)} x${item.qty} R\$${(item.value! * item.qty!).toStringAsFixed(2)})',
                     ),
                   ),
                   PopupMenuButton<Person>(
@@ -187,7 +187,7 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
                     itemBuilder: (_) {
                       return _store.people
                           .map((p) => PopupMenuItem(
-                                child: Text(p.name),
+                                child: Text(p.name!),
                                 value: p,
                               ))
                           .toList();
@@ -197,7 +197,7 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
                     icon: Icon(Icons.remove),
                     onPressed: () {
                       delItem(item);
-                      _listView.currentState.removeItem(
+                      _listView.currentState!.removeItem(
                         index,
                         (context, animation) {
                           return _card(index, item, animation);
@@ -224,8 +224,8 @@ class _CarteState extends State<Carte> with StoreWatcherMixin<Carte> {
                         person.consumed.where((i) => i == item).length;
                     final total = people
                         .map((p) => p.consumed.where((i) => i == item).length)
-                        .fold(0, (a, e) => a + e);
-                    final value = (count / total * item.value * item.qty);
+                        .fold(0, (dynamic a, e) => a + e);
+                    final value = (count / total * item.value! * item.qty!);
 
                     return Container(
                       padding: EdgeInsets.all(8),

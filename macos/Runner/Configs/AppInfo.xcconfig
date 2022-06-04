@@ -11,4 +11,4 @@ PRODUCT_NAME = bill_splitter
 PRODUCT_BUNDLE_IDENTIFIER = me.acristoffers.billsplitter.billSplitter
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2020 me.acristoffers.bill_splitter. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2022 me.acristoffers.billsplitter. All rights reserved.

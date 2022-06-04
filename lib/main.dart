@@ -36,13 +36,13 @@ class Application extends StatefulWidget {
 
 class _ApplicationState extends State<Application>
     with StoreWatcherMixin<Application> {
-  SplitterStore _store;
+  late SplitterStore _store;
 
   @override
   void initState() {
     super.initState();
 
-    _store = listenToStore(storeToken);
+    _store = listenToStore(storeToken) as SplitterStore;
   }
 
   @override

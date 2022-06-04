@@ -31,11 +31,11 @@ class Menu extends StatefulWidget {
 }
 
 class _MenuState extends State<Menu> with TickerProviderStateMixin {
-  Pages _currentAnimation;
+  Pages? _currentAnimation;
   Pages _currentPage = Pages.Menu;
-  AnimationController _animationController;
-  Animation<double> _a1;
-  Animation<double> _a2;
+  late AnimationController _animationController;
+  late Animation<double> _a1;
+  late Animation<double> _a2;
 
   @override
   void initState() {
@@ -93,8 +93,8 @@ class _MenuState extends State<Menu> with TickerProviderStateMixin {
 
     double left = 0;
     double right = 0;
-    double bottom = _a1.value == 0 ? 0 : null;
-    double height = _a1.value == 0 ? null : _interpol(_a1.value, maxHeight, 58);
+    double? bottom = _a1.value == 0 ? 0 : null;
+    double? height = _a1.value == 0 ? null : _interpol(_a1.value, maxHeight, 58);
     CustomClipper<Path> clipper = _PersonOutClipper(_a1.value);
 
     if (_currentAnimation == Pages.Carte) {
@@ -149,8 +149,8 @@ class _MenuState extends State<Menu> with TickerProviderStateMixin {
 
     double left = 0;
     double right = 0;
-    double bottom = _a1.value == 0 ? 0 : null;
-    double height = _a1.value == 0 ? null : _interpol(_a1.value, maxHeight, 58);
+    double? bottom = _a1.value == 0 ? 0 : null;
+    double? height = _a1.value == 0 ? null : _interpol(_a1.value, maxHeight, 58);
 
     if (_currentAnimation == Pages.People) {
       left = _interpol(_a1.value, 0, -maxWidth);

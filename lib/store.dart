@@ -30,17 +30,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Person {
   Person(this.name);
 
-  String name;
-  List<Item> consumed = List<Item>();
+  String? name;
+  List<Item> consumed = <Item>[];
 }
 
 class Item {
   Item(this.qty, this.name, this.value);
 
-  int id;
-  int qty;
-  String name;
-  double value;
+  int? id;
+  int? qty;
+  String? name;
+  double? value;
 }
 
 final addPerson = Action<Person>();
@@ -56,8 +56,8 @@ final setPage = Action<Pages>();
 class SplitterStore extends Store {
   bool _loaded = false;
 
-  List<Person> _people = List<Person>();
-  List<Item> _items = List<Item>();
+  List<Person> _people = <Person>[];
+  List<Item> _items = <Item>[];
   Pages _page = Pages.Menu;
 
   List<Person> get people => _people;
@@ -67,47 +67,47 @@ class SplitterStore extends Store {
   SplitterStore() {
     _load();
 
-    triggerOnAction(setPage, (page) => _page = page);
+    triggerOnAction(setPage, (dynamic page) => _page = page);
 
-    triggerOnAction(addPerson, (person) {
+    triggerOnAction(addPerson, (dynamic person) {
       _people.add(person);
-      _people.sort((p1, p2) => p1.name.compareTo(p2.name));
+      _people.sort((p1, p2) => p1.name!.compareTo(p2.name!));
       _save();
     });
 
-    triggerOnAction(delPerson, (person) {
+    triggerOnAction(delPerson, (dynamic person) {
       _people.remove(person);
-      _people.sort((p1, p2) => p1.name.compareTo(p2.name));
+      _people.sort((p1, p2) => p1.name!.compareTo(p2.name!));
       _save();
     });
 
-    triggerOnAction(setPerson, (person) {
+    triggerOnAction(setPerson, (dynamic person) {
       _people.remove(person);
       _people.add(person);
-      _people.sort((p1, p2) => p1.name.compareTo(p2.name));
+      _people.sort((p1, p2) => p1.name!.compareTo(p2.name!));
       _save();
     });
 
-    triggerOnAction(addItem, (item) {
+    triggerOnAction(addItem, (dynamic item) {
       _items.add(item);
-      _items.sort((p1, p2) => p1.name.compareTo(p2.name));
+      _items.sort((p1, p2) => p1.name!.compareTo(p2.name!));
       _save();
     });
 
-    triggerOnAction(delItem, (item) {
+    triggerOnAction(delItem, (dynamic item) {
       _items.remove(item);
       for (var person in _people) {
         person.consumed.remove(item);
-        person.consumed.sort((p1, p2) => p1.name.compareTo(p2.name));
+        person.consumed.sort((p1, p2) => p1.name!.compareTo(p2.name!));
       }
-      _items.sort((p1, p2) => p1.name.compareTo(p2.name));
+      _items.sort((p1, p2) => p1.name!.compareTo(p2.name!));
       _save();
     });
 
-    triggerOnAction(setItem, (item) {
+    triggerOnAction(setItem, (dynamic item) {
       _items.remove(item);
       _items.add(item);
-      _items.sort((p1, p2) => p1.name.compareTo(p2.name));
+      _items.sort((p1, p2) => p1.name!.compareTo(p2.name!));
       _save();
     });
   }
@@ -145,8 +145,8 @@ class SplitterStore extends Store {
       SharedPreferences.getInstance().then((prefs) {
         if (!prefs.containsKey('items') || !prefs.containsKey('people')) return;
 
-        List<dynamic> ts = jsonDecode(prefs.getString('items'));
-        List<dynamic> ps = jsonDecode(prefs.getString('people'));
+        List<dynamic> ts = jsonDecode(prefs.getString('items')!);
+        List<dynamic> ps = jsonDecode(prefs.getString('people')!);
 
         _items = ts.map((i) {
           final item = Item(i['qty'], i['name'], i['value']);

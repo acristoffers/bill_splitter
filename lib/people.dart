@@ -30,7 +30,7 @@ class People extends StatefulWidget {
 }
 
 class _PeopleState extends State<People> with StoreWatcherMixin<People> {
-  SplitterStore _store;
+  late SplitterStore _store;
   TextEditingController _nameController = TextEditingController();
   FocusNode _nameFocus = FocusNode();
   GlobalKey<AnimatedListState> _listView = GlobalKey();
@@ -39,11 +39,11 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
   void initState() {
     super.initState();
 
-    _store = listenToStore(storeToken);
-    _store.triggerOnAction(addPerson, (person) {
+    _store = listenToStore(storeToken) as SplitterStore;
+    _store.triggerOnAction(addPerson, (dynamic person) {
       if (_listView.currentState == null) return;
       final index = _store.people.indexOf(person);
-      _listView.currentState.insertItem(index);
+      _listView.currentState!.insertItem(index);
     });
   }
 
@@ -121,7 +121,7 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  Expanded(child: Text(person.name)),
+                  Expanded(child: Text(person.name!)),
                   PopupMenuButton<Item>(
                     icon: Icon(Icons.add_shopping_cart),
                     onSelected: (item) {
@@ -141,7 +141,7 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
                     icon: Icon(Icons.remove),
                     onPressed: () {
                       delPerson(person);
-                      _listView.currentState.removeItem(
+                      _listView.currentState!.removeItem(
                         index,
                         (context, animation) {
                           return _card(index, person, animation);
@@ -158,15 +158,15 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
                   itemCount: person.consumed.toSet().length,
                   itemBuilder: (context, index) {
                     final items = person.consumed.toSet().toList();
-                    items.sort((p1, p2) => p1.name.compareTo(p2.name));
+                    items.sort((p1, p2) => p1.name!.compareTo(p2.name!));
 
                     final item = items[index];
                     final count =
                         person.consumed.where((i) => i == item).length;
                     final total = _store.people
                         .map((p) => p.consumed.where((i) => i == item).length)
-                        .fold(0, (a, e) => a + e);
-                    final value = (count / total * item.value * item.qty);
+                        .fold(0, (dynamic a, e) => a + e);
+                    final value = (count / total * item.value! * item.qty!);
 
                     return Row(
                       children: <Widget>[
@@ -204,9 +204,9 @@ class _PeopleState extends State<People> with StoreWatcherMixin<People> {
       final count = person.consumed.where((i) => i == item).length;
       final total = _store.people
           .map((p) => p.consumed.where((i) => i == item).length)
-          .fold(0, (a, e) => a + e);
+          .fold(0, (dynamic a, e) => a + e);
 
-      return count / total * item.value * item.qty;
+      return count / total * item.value! * item.qty!;
     }).fold(0, (a, e) => a + e);
   }
 }
